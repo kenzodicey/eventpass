@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&family=Jost+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#FAF8F4;--warm:#F2EDE3;--stone:#E8E0D0;--bark:#C4B49A;
+  --mud:#8A7660;--ink:#1C1814;--charcoal:#3A3430;
+  --gold:#B8933A;--gold-lt:#F0E4C4;
+  --sage:#4A5C4A;--sage-lt:#DDE8DD;
+  --rose:#8B4A4A;--rose-lt:#EDD8D8;
+  --blue:#2A4A7A;--blue-lt:#D8E4F4;
+  --wa:#25D366;--wa-lt:#D4F5E0;
+  --radius:4px;--radius-lg:10px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;line-height:1.6}
+
+/* ── VIEWS ── */
+.view{display:none;min-height:100vh}
+.view.active{display:flex;flex-direction:column}
+
+/* ── LANDING ── */
+#view-landing{align-items:center;justify-content:center;background:var(--ink);position:relative;overflow:hidden}
+.landing-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(184,147,58,.12) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 80% 70%,rgba(74,92,74,.10) 0%,transparent 60%)}
+.landing-grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");opacity:.6}
+.landing-inner{position:relative;z-index:1;text-align:center;padding:60px 32px;max-width:560px}
+.landing-wordmark{font-family:'Cormorant Garamond',serif;font-size:72px;font-weight:300;color:var(--cream);letter-spacing:-2px;line-height:.9;margin-bottom:8px}
+.landing-wordmark em{color:var(--gold);font-style:italic}
+.landing-tagline{font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--bark);margin-bottom:56px;font-weight:400}
+.landing-divider{width:1px;height:48px;background:var(--charcoal);margin:0 auto 40px}
+.landing-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px}
+.landing-card{border:1px solid #2E2A26;border-radius:var(--radius-lg);padding:28px 24px;cursor:pointer;transition:all .3s;text-align:left;background:transparent}
+.landing-card:hover{background:rgba(255,255,255,.04);border-color:#4A4440;transform:translateY(-2px)}
+.landing-card-icon{font-size:24px;margin-bottom:12px;display:block}
+.landing-card-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--cream);font-weight:300;margin-bottom:4px}
+.landing-card-desc{font-size:12px;color:var(--mud);line-height:1.5}
+.landing-guest-link{font-size:12px;letter-spacing:1px;color:var(--mud);text-decoration:none;border-bottom:1px solid #3A3430;padding-bottom:2px;cursor:pointer;transition:color .2s;background:transparent;border-left:none;border-right:none;border-top:none;font-family:'Jost',sans-serif}
+.landing-guest-link:hover{color:var(--bark)}
+
+/* ── ADMIN ── */
+#view-admin{background:var(--cream);flex-direction:row}
+.admin-sidebar{width:240px;flex-shrink:0;background:var(--ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.admin-wordmark{padding:32px 24px 24px;border-bottom:1px solid #222}
+.admin-wordmark-text{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--cream);font-weight:300;letter-spacing:-.5px}
+.admin-wordmark-text em{color:var(--gold);font-style:italic}
+.admin-wordmark-sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#444;margin-top:2px}
+.admin-nav{padding:16px 0;flex:1}
+.admin-nav-label{padding:8px 20px 4px;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#3A3430}
+.a-nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;background:transparent;border:none;color:#666;font-family:'Jost',sans-serif;font-size:13px;font-weight:300;cursor:pointer;text-align:left;transition:all .2s;border-left:2px solid transparent}
+.a-nav-btn:hover{color:var(--cream);background:rgba(255,255,255,.03)}
+.a-nav-btn.active{color:var(--cream);border-left-color:var(--gold);background:rgba(184,147,58,.06)}
+.a-nav-icon{font-size:15px;width:18px;flex-shrink:0}
+.admin-event-pill{display:flex;align-items:center;gap:8px;padding:8px 16px 8px 20px;cursor:pointer;transition:all .15s}
+.admin-event-pill:hover .ev-pill-name{color:var(--cream)}
+.ev-pill-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.ev-pill-name{font-size:12px;color:#666;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .2s}
+.ev-pill-cnt{font-size:10px;color:#333;font-family:'Jost Mono',monospace}
+.admin-sidebar-foot{padding:16px 20px;border-top:1px solid #1A1814;display:flex;flex-direction:column;gap:8px}
+.admin-back-btn{font-size:11px;color:#444;background:transparent;border:none;cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:color .2s}
+.admin-back-btn:hover{color:var(--bark)}
+.admin-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.admin-topbar{padding:28px 40px 24px;border-bottom:1px solid var(--stone);display:flex;align-items:flex-end;justify-content:space-between;gap:16px;background:var(--cream);position:sticky;top:0;z-index:10}
+.admin-page-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;letter-spacing:-.5px;line-height:1}
+.admin-page-title span{color:var(--mud);font-weight:300}
+.admin-page-sub{font-size:12px;color:var(--mud);margin-top:4px}
+.admin-body{padding:32px 40px;display:flex;flex-direction:column;gap:24px;flex:1}
+.admin-panel{display:none;flex-direction:column;gap:24px}
+.admin-panel.active{display:flex}
+
+/* ── STATS ── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-tile{border:1px solid var(--stone);border-radius:var(--radius-lg);padding:20px 22px;background:var(--warm)}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;line-height:1;letter-spacing:-1px}
+.stat-l{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--mud);margin-top:6px;font-weight:400}
+
+/* ── SECTION CARDS ── */
+.section-card{background:#fff;border:1px solid var(--stone);border-radius:var(--radius-lg);overflow:hidden}
+.section-card-head{padding:18px 24px;border-bottom:1px solid var(--stone);display:flex;align-items:center;justify-content:space-between}
+.section-card-title{font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--mud)}
+.section-card-body{padding:24px}
+
+/* ── FORMS ── */
+.form-row{display:grid;gap:14px;align-items:end}
+.form-cols-3{grid-template-columns:1fr 1fr 1fr}
+.form-cols-4{grid-template-columns:1.2fr 1.2fr .9fr .8fr auto}
+.form-cols-2{grid-template-columns:1fr 1fr}
+.fld label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mud);margin-bottom:6px;font-weight:400}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius);color:var(--ink);font-family:'Jost',sans-serif;font-size:13px;font-weight:300;padding:10px 13px;outline:none;transition:border-color .2s,background .2s;appearance:none;-webkit-appearance:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--bark);background:#fff}
+.fld select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C4B49A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.fld textarea{resize:vertical;line-height:1.6}
+
+/* ── BUTTONS ── */
+.btn{border:none;border-radius:var(--radius);padding:10px 20px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn-dark{background:var(--ink);color:var(--cream)}
+.btn-dark:hover{background:var(--charcoal);transform:translateY(-1px)}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-gold:hover{background:#A8832A;transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--stone);color:var(--charcoal)}
+.btn-outline:hover{border-color:var(--bark);color:var(--ink)}
+.btn-ghost{background:transparent;border:1px solid transparent;color:var(--mud)}
+.btn-ghost:hover{border-color:var(--stone);color:var(--ink)}
+.btn-sm{padding:7px 14px;font-size:11px}
+.btn-danger{background:transparent;border:1px solid var(--rose-lt);color:var(--rose)}
+.btn-danger:hover{background:var(--rose-lt)}
+.btn-sage{background:var(--sage);color:#fff}
+.btn-sage:hover{background:#3A4C3A}
+.btn-wa{background:var(--wa);color:#fff}
+.btn-wa:hover{background:#1EB85A;transform:translateY(-1px)}
+.btn-sms{background:var(--blue);color:#fff}
+.btn-sms:hover{background:#1A3A6A;transform:translateY(-1px)}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{border-bottom:1px solid var(--stone)}
+th{padding:10px 14px;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:2px;color:var(--mud);text-align:left}
+td{padding:13px 14px;border-bottom:1px solid var(--warm);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--warm)}
+.mono{font-family:'Jost Mono',monospace;font-size:11px;letter-spacing:1px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.badge-sage{background:var(--sage-lt);color:var(--sage)}
+.badge-rose{background:var(--rose-lt);color:var(--rose)}
+.badge-gold{background:var(--gold-lt);color:#8A6A20}
+.badge-stone{background:var(--warm);color:var(--mud);border:1px solid var(--stone)}
+.badge-ink{background:var(--ink);color:var(--cream)}
+.badge-blue{background:var(--blue-lt);color:var(--blue)}
+.badge-wa{background:var(--wa-lt);color:#1A7A40}
+
+/* ── CHECK-IN SCANNER ── */
+.scanner-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.scan-input-giant{
+  width:100%;background:var(--warm);
+  border:1.5px solid var(--stone);border-radius:var(--radius);
+  color:var(--ink);font-family:'Jost Mono',monospace;
+  font-size:22px;font-weight:300;padding:16px;
+  text-align:center;text-transform:uppercase;letter-spacing:6px;
+  outline:none;margin:16px 0;transition:border-color .25s;
+  appearance:none;-webkit-appearance:none;caret-color:var(--gold);
+}
+.scan-input-giant:focus{border-color:var(--gold);background:#fff}
+.scan-ev-select{width:100%;background:var(--warm);border:1px solid var(--stone);border-radius:var(--radius);color:var(--ink);font-family:'Jost',sans-serif;font-size:13px;font-weight:300;padding:10px 13px;outline:none;margin-bottom:12px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C4B49A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;transition:border-color .2s,background .2s}
+.scan-ev-select:focus{border-color:var(--bark);background:#fff}
+.scan-result{border-radius:var(--radius-lg);padding:24px;text-align:center;margin-top:16px;display:none;animation:fadeUp .3s ease}
+.scan-result.success{background:var(--sage-lt);border:1.5px solid var(--sage)}
+.scan-result.fail{background:var(--rose-lt);border:1.5px solid var(--rose)}
+.scan-result.already{background:var(--gold-lt);border:1.5px solid var(--gold)}
+.scan-result-icon{font-size:32px;margin-bottom:6px}
+.scan-result-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;margin-top:4px;letter-spacing:-.5px}
+.scan-result-msg{font-size:12px;margin-top:4px;opacity:.8}
+.log-entry{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--stone)}
+.log-entry:last-child{border-bottom:none}
+.log-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);flex-shrink:0;margin-right:10px}
+.log-name{font-size:13px;font-weight:400}
+.log-detail{font-size:11px;color:var(--mud);margin-top:1px}
+.log-time{font-family:'Jost Mono',monospace;font-size:10px;color:var(--bark);flex-shrink:0;margin-left:10px}
+
+/* ── SMS SETTINGS ── */
+.sms-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.config-status-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius);background:var(--warm);border:1px solid var(--stone);margin:16px 0 20px}
+.status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.status-label{font-size:12px;color:var(--charcoal)}
+.channel-tabs{display:flex;gap:0;border:1px solid var(--stone);border-radius:var(--radius);overflow:hidden;width:fit-content;margin-bottom:20px}
+.channel-tab{padding:8px 22px;font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;background:transparent;border:none;color:var(--mud);cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s}
+.channel-tab.active{background:var(--ink);color:var(--cream)}
+.channel-tab:not(.active):hover{background:var(--warm);color:var(--ink)}
+.channel-panel{display:none}
+.channel-panel.active{display:block}
+.tmpl-vars{font-size:11px;color:var(--mud);margin-top:8px}
+.tmpl-vars code{background:var(--warm);padding:2px 6px;border-radius:2px;font-family:'Jost Mono',monospace;font-size:10px;margin-right:4px}
+
+/* ── GUEST PAGE ── */
+#view-guest{background:var(--ink);align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden}
+.guest-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 10% 20%,rgba(184,147,58,.08) 0%,transparent 55%),radial-gradient(ellipse 60% 70% at 90% 80%,rgba(74,92,74,.07) 0%,transparent 55%)}
+.guest-grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E")}
+#guest-entry{position:relative;z-index:1;width:100%;max-width:440px;padding:32px;text-align:center;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.guest-logo{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;color:var(--cream);letter-spacing:-1px;margin-bottom:4px}
+.guest-logo em{color:var(--gold);font-style:italic}
+.guest-logo-sub{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--mud);margin-bottom:48px}
+.guest-entry-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--bark);margin-bottom:20px}
+.guest-code-input{width:100%;background:transparent;border:none;border-bottom:1px solid #3A3430;color:var(--cream);font-family:'Jost Mono',monospace;font-size:28px;font-weight:300;padding:12px 0;text-align:center;letter-spacing:8px;outline:none;text-transform:uppercase;transition:border-color .3s;appearance:none;-webkit-appearance:none;caret-color:var(--gold)}
+.guest-code-input::placeholder{color:#2E2A26;letter-spacing:4px;font-size:18px}
+.guest-code-input:focus{border-color:var(--gold)}
+.guest-code-err{font-size:12px;color:var(--rose-lt);margin-top:12px;min-height:18px;transition:all .2s}
+.guest-entry-actions{margin-top:28px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.guest-enter-btn{width:100%;padding:15px;background:var(--gold);border:none;border-radius:var(--radius);color:#fff;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.guest-enter-btn:hover{background:#A8832A;transform:translateY(-1px)}
+.guest-admin-link{font-size:11px;color:#2E2A26;cursor:pointer;transition:color .2s;background:transparent;border:none;font-family:'Jost',sans-serif;letter-spacing:1px}
+.guest-admin-link:hover{color:var(--mud)}
+#guest-invite{position:relative;z-index:1;width:100%;max-width:580px;padding:32px;animation:fadeUp .6s ease;display:none}
+.invite-card{background:var(--cream);border-radius:12px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.5),0 0 0 1px rgba(184,147,58,.2)}
+.invite-card-header{padding:48px 48px 36px;border-bottom:1px solid var(--stone);background:linear-gradient(135deg,var(--cream) 0%,var(--warm) 100%);text-align:center;position:relative;overflow:hidden}
+.invite-header-deco{position:absolute;top:-30px;right:-30px;width:140px;height:140px;border:1px solid var(--stone);border-radius:50%;opacity:.4}
+.invite-header-deco2{position:absolute;bottom:-40px;left:-20px;width:100px;height:100px;border:1px solid var(--stone);border-radius:50%;opacity:.3}
+.invite-event-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:16px;font-weight:400}
+.invite-guest-name{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;letter-spacing:-1px;line-height:1;margin-bottom:6px;color:var(--ink)}
+.invite-guest-sub{font-size:13px;color:var(--mud);font-style:italic}
+.invite-type-badge{display:inline-flex;align-items:center;gap:6px;margin-top:16px;padding:6px 16px;background:var(--ink);color:var(--cream);border-radius:20px;font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.invite-card-body{padding:36px 48px}
+.invite-detail-row{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px}
+.invite-detail{padding-bottom:16px;border-bottom:1px solid var(--stone)}
+.invite-detail-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--bark);margin-bottom:4px;font-weight:400}
+.invite-detail-value{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--ink)}
+.invite-note{background:var(--warm);border-radius:var(--radius);padding:16px;font-size:13px;color:var(--mud);line-height:1.6;margin-bottom:28px;font-style:italic;border-left:2px solid var(--bark)}
+.invite-code-row{display:flex;align-items:center;justify-content:space-between;background:var(--ink);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px}
+.invite-code-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--mud)}
+.invite-code-val{font-family:'Jost Mono',monospace;font-size:16px;color:var(--cream);letter-spacing:4px}
+.invite-back-btn{display:block;text-align:center;margin-top:20px;font-size:11px;color:var(--mud);cursor:pointer;background:transparent;border:none;font-family:'Jost',sans-serif;letter-spacing:1px;transition:color .2s}
+.invite-back-btn:hover{color:var(--bark)}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(4px);padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--cream);border-radius:var(--radius-lg);width:100%;max-width:520px;position:relative;animation:popIn .25s ease;overflow:hidden;max-height:90vh;overflow-y:auto}
+@keyframes popIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{padding:28px 32px 20px;border-bottom:1px solid var(--stone);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:var(--warm)}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:-.5px}
+.modal-close{width:28px;height:28px;border-radius:var(--radius);flex-shrink:0;background:var(--stone);border:none;color:var(--mud);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;margin-top:4px;transition:all .15s}
+.modal-close:hover{background:var(--bark);color:#fff}
+.modal-body{padding:28px 32px 32px}
+.qr-modal-content{text-align:center}
+.qr-wrap{margin:0 auto 20px;background:#fff;padding:14px;border-radius:var(--radius-lg);display:inline-block;border:1px solid var(--stone)}
+.qr-guest-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;margin-bottom:4px}
+.qr-code-display{font-family:'Jost Mono',monospace;font-size:13px;color:var(--mud);letter-spacing:3px;margin-bottom:4px}
+.qr-ev-tag{display:inline-block;background:var(--gold-lt);color:#8A6A20;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:16px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--ink);color:var(--cream);padding:12px 20px;border-radius:var(--radius-lg);font-size:12px;letter-spacing:.5px;transform:translateY(70px);opacity:0;transition:all .3s;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--sage)}
+.toast.err{background:var(--rose)}
+.toast.wa{background:var(--wa)}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:60px 24px;color:var(--bark)}
+.empty-icon{font-size:36px;margin-bottom:12px}
+.empty-text{font-size:13px;line-height:1.7;color:var(--mud)}
+.alert{padding:12px 16px;border-radius:var(--radius);font-size:12px;margin-bottom:16px}
+.alert-gold{background:var(--gold-lt);color:#8A6A20;border:1px solid var(--bark)}
+.alert-sage{background:var(--sage-lt);color:var(--sage);border:1px solid var(--sage)}
+.alert-blue{background:var(--blue-lt);color:var(--blue);border:1px solid #A0B8D8}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--stone);border-radius:2px}
+
+@media(max-width:860px){
+  #view-admin{flex-direction:column}
+  .admin-sidebar{width:100%;height:auto;position:static}
+  .admin-body{padding:20px}
+  .stat-row{grid-template-columns:1fr 1fr}
+  .form-cols-4,.form-cols-3,.sms-grid{grid-template-columns:1fr 1fr}
+  .scanner-layout{grid-template-columns:1fr}
+  .invite-card-header,.invite-card-body{padding:28px}
+  .invite-detail-row{grid-template-columns:1fr}
+  .invite-guest-name{font-size:38px}
+  .landing-cards{grid-template-columns:1fr}
+}
+
+/* ── LOGIN VIEW ── */
+#view-login{
+  align-items:center;justify-content:center;
+  background:var(--ink);position:relative;overflow:hidden;
+}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(184,147,58,.12) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 80% 70%,rgba(74,92,74,.10) 0%,transparent 60%)}
+.login-grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");opacity:.6}
+.login-inner{position:relative;z-index:1;text-align:center;padding:60px 32px;max-width:440px;animation:fadeUp .5s ease}
+.login-wordmark{font-family:'Cormorant Garamond',serif;font-size:72px;font-weight:300;color:var(--cream);letter-spacing:-2px;line-height:.9;margin-bottom:8px}
+.login-wordmark em{color:var(--gold);font-style:italic}
+.login-sub{font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--bark);margin-bottom:48px;font-weight:400}
+.login-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--bark);margin-bottom:20px}
+.login-pin-input{width:100%;background:transparent;border:none;border-bottom:1px solid #3A3430;color:var(--cream);font-family:'Jost Mono',monospace;font-size:28px;font-weight:300;padding:12px 0;text-align:center;letter-spacing:8px;outline:none;text-transform:uppercase;transition:border-color .3s;appearance:none;-webkit-appearance:none;caret-color:var(--gold);margin-bottom:24px}
+.login-pin-input:focus{border-color:var(--gold)}
+.login-pin-input::placeholder{color:#2E2A26;letter-spacing:4px;font-size:18px}
+.login-error{font-size:12px;color:var(--rose-lt);margin-bottom:16px;min-height:18px}
+.login-btn{width:100%;padding:15px;background:var(--gold);border:none;border-radius:var(--radius);color:#fff;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.login-btn:hover{background:#A8832A;transform:translateY(-1px)}
+.login-back{display:block;margin-top:20px;font-size:11px;color:var(--mud);cursor:pointer;background:transparent;border:none;font-family:'Jost',sans-serif;letter-spacing:1px;transition:color .2s}
+.login-back:hover{color:var(--bark)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LANDING ═══════════ -->
+<div class="view active" id="view-landing">
+  <div class="landing-bg"></div>
+  <div class="landing-grain"></div>
+  <div class="landing-inner">
+    <div class="landing-wordmark">Event<em>Pass</em></div>
+    <div class="landing-tagline">Private Event Management System</div>
+    <div class="landing-divider"></div>
+    <div class="landing-cards">
+      <div class="landing-card" onclick="showAdmin()">
+        <span class="landing-card-icon">🗝</span>
+        <div class="landing-card-title">Host Panel</div>
+        <div class="landing-card-desc">Create events, generate guest codes, manage check-ins and send invitations.</div>
+      </div>
+      <div class="landing-card" onclick="showGuest()">
+        <span class="landing-card-icon">✉</span>
+        <div class="landing-card-title">Guest Entry</div>
+        <div class="landing-card-desc">Enter your personal invite code to reveal your personalized invitation.</div>
+      </div>
+    </div>
+    <button class="landing-guest-link" onclick="showGuest()">I have an invite code →</button>
+  </div>
+</div>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div class="view" id="view-login">
+  <div class="login-bg"></div>
+  <div class="login-grain"></div>
+  <div class="login-inner">
+    <div class="login-wordmark">Event<em>Pass</em></div>
+    <div class="login-sub">Host Login</div>
+    <div class="login-label">Enter your PIN</div>
+    <input type="password" class="login-pin-input" id="login-pin" placeholder="· · · ·" maxlength="8" autocomplete="off" spellcheck="false"/>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" onclick="submitLogin()">Login</button>
+    <button class="login-back" onclick="showLanding()">← Back to Home</button>
+  </div>
+</div>
+
+<!-- ═══════════ ADMIN PANEL ═══════════ -->
+<div class="view" id="view-admin">
+  <aside class="admin-sidebar">
+    <div class="admin-wordmark">
+      <div class="admin-wordmark-text">Event<em>Pass</em></div>
+      <div class="admin-wordmark-sub">Host Panel</div>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-label">Navigation</div>
+      <button class="a-nav-btn active" id="anav-overview" onclick="switchAdminPanel('overview')">
+        <span class="a-nav-icon">◈</span> Overview
+      </button>
+      <button class="a-nav-btn" id="anav-events" onclick="switchAdminPanel('events')">
+        <span class="a-nav-icon">◇</span> Events
+      </button>
+      <button class="a-nav-btn" id="anav-guests" onclick="switchAdminPanel('guests')">
+        <span class="a-nav-icon">◻</span> Guests & Codes
+      </button>
+      <button class="a-nav-btn" id="anav-checkin" onclick="switchAdminPanel('checkin')">
+        <span class="a-nav-icon">✓</span> Check-In Scanner
+      </button>
+      <button class="a-nav-btn" id="anav-messaging" onclick="switchAdminPanel('messaging')">
+        <span class="a-nav-icon">◉</span> SMS & WhatsApp
+      </button>
+      <div class="admin-nav-label" style="margin-top:8px">Events</div>
+      <div id="sidebar-events"></div>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <button class="admin-back-btn" id="logout-btn" onclick="logoutAdmin()" style="color:#B8933A">🔓 Logout</button>
+      <button class="admin-back-btn" onclick="showGuest()" style="color:#2E2A26">Guest view ↗</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div>
+        <div class="admin-page-title" id="admin-pg-title">Overview</div>
+        <div class="admin-page-sub" id="admin-pg-sub">Your events at a glance</div>
+      </div>
+      <div id="admin-topbar-actions"></div>
+    </div>
+    <div class="admin-body">
+
+      <!-- OVERVIEW -->
+      <div class="admin-panel active" id="apanel-overview">
+        <div class="stat-row">
+          <div class="stat-tile"><div class="stat-n" id="ov-events">0</div><div class="stat-l">Events</div></div>
+          <div class="stat-tile"><div class="stat-n" id="ov-guests">0</div><div class="stat-l">Guests Invited</div></div>
+          <div class="stat-tile"><div class="stat-n" id="ov-checkedin">0</div><div class="stat-l">Checked In</div></div>
+          <div class="stat-tile"><div class="stat-n" id="ov-pending">0</div><div class="stat-l">Not Yet Arrived</div></div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-head"><span class="section-card-title">Recent Activity</span></div>
+          <div class="section-card-body" id="overview-activity">
+            <div class="empty"><div class="empty-icon">✦</div><div class="empty-text">Create your first event to get started.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EVENTS -->
+      <div class="admin-panel" id="apanel-events">
+        <div class="section-card">
+          <div class="section-card-head"><span class="section-card-title">Create New Event</span></div>
+          <div class="section-card-body">
+            <div class="form-row form-cols-3" style="margin-bottom:14px">
+              <div class="fld"><label>Event Name</label><input id="ev-name" type="text" placeholder="e.g. Amara's Wedding Reception"/></div>
+              <div class="fld"><label>Date</label><input id="ev-date" type="date"/></div>
+              <div class="fld"><label>Venue</label><input id="ev-venue" type="text" placeholder="e.g. The Serena Hotel, Dar es Salaam"/></div>
+            </div>
+            <div class="form-row form-cols-2" style="margin-bottom:14px">
+              <div class="fld"><label>Time</label><input id="ev-time" type="time"/></div>
+              <div class="fld"><label>Dress Code (optional)</label><input id="ev-dress" type="text" placeholder="e.g. Black Tie, Smart Casual"/></div>
+            </div>
+            <div class="fld" style="margin-bottom:18px">
+              <label>Personal Note to Guests (optional)</label>
+              <textarea id="ev-note" rows="2" placeholder="e.g. Your presence would mean the world to us…"></textarea>
+            </div>
+            <button class="btn btn-dark" onclick="createNewEvent()">Create Event</button>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-head"><span class="section-card-title">All Events</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Event</th><th>Date</th><th>Venue</th><th>Guests</th><th>Checked In</th><th></th></tr></thead>
+              <tbody id="events-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- GUESTS & CODES -->
+      <div class="admin-panel" id="apanel-guests">
+        <div class="section-card">
+          <div class="section-card-head"><span class="section-card-title">Add Guest</span></div>
+          <div class="section-card-body">
+            <div class="form-row form-cols-4">
+              <div class="fld"><label>Guest Name</label><input id="g-name" type="text" placeholder="Full name"/></div>
+              <div class="fld"><label>Phone Number</label><input id="g-phone" type="text" placeholder="+255712345678"/></div>
+              <div class="fld"><label>Event</label><select id="g-event"><option value="">— Select —</option></select></div>
+              <div class="fld"><label>Invite Type</label>
+                <select id="g-type">
+                  <option value="single">Single 🎟</option>
+                  <option value="double">Double 🎟🎟</option>
+                </select>
+              </div>
+              <div><button class="btn btn-dark" onclick="addGuest()">Add Guest</button></div>
+            </div>
+            <div id="g-warn" class="alert alert-gold" style="display:none;margin-top:14px">⚠ No events yet — create an event first before adding guests.</div>
+            <div id="g-sms-note" class="alert alert-blue" style="display:none;margin-top:14px">ℹ Configure SMS or WhatsApp in the <strong>SMS & WhatsApp</strong> tab to automatically send codes when adding guests.</div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-head">
+            <span class="section-card-title">Guest List</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="gf-event" style="font-family:'Jost',sans-serif;font-size:11px;padding:6px 10px;border-radius:var(--radius);border:1px solid var(--stone);background:var(--warm);color:var(--ink)" onchange="renderGuests()">
+                <option value="">All Events</option>
+              </select>
+              <button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ CSV</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Event</th><th>Code</th><th>Invite</th><th>Sent Via</th><th>Check-In</th><th>Actions</th></tr></thead>
+              <tbody id="guests-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHECK-IN SCANNER -->
+      <div class="admin-panel" id="apanel-checkin">
+        <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-tile"><div class="stat-n" id="ci-total">0</div><div class="stat-l">Total Guests</div></div>
+          <div class="stat-tile"><div class="stat-n" id="ci-checked">0</div><div class="stat-l">Checked In</div></div>
+          <div class="stat-tile"><div class="stat-n" id="ci-remaining">0</div><div class="stat-l">Remaining</div></div>
+        </div>
+        <div class="scanner-layout">
+          <div class="section-card">
+            <div class="section-card-head"><span class="section-card-title">Scan Entry Code</span></div>
+            <div class="section-card-body">
+              <p style="font-size:12px;color:var(--mud);margin-bottom:14px;line-height:1.7">Select the event, then type or scan the guest's entry code. Press Enter or click Check In.</p>
+              <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mud);display:block;margin-bottom:6px;font-weight:400">Filter by Event</label>
+              <select class="scan-ev-select" id="scan-ev-sel">
+                <option value="">— All Events —</option>
+              </select>
+              <input type="text" class="scan-input-giant" id="scan-code-inp" placeholder="A1B2C3D4" maxlength="10" autocomplete="off" spellcheck="false"/>
+              <button class="btn btn-dark" style="width:100%;padding:13px;font-size:13px" onclick="doCheckIn()">✓ Check In Guest</button>
+              <div class="scan-result" id="scan-result">
+                <div class="scan-result-icon" id="sr-icon"></div>
+                <div class="scan-result-name" id="sr-name"></div>
+                <div class="scan-result-msg" id="sr-msg"></div>
+                <div id="sr-badge" style="margin-top:10px"></div>
+              </div>
+            </div>
+          </div>
+          <div class="section-card">
+            <div class="section-card-head">
+              <span class="section-card-title">Check-In Log</span>
+              <button class="btn btn-danger btn-sm" onclick="clearLog()">Clear Log</button>
+            </div>
+            <div class="section-card-body" id="checkin-log" style="padding:0 24px;max-height:480px;overflow-y:auto">
+              <div class="empty" style="padding:40px 0"><div class="empty-icon">✦</div><div class="empty-text">No check-ins yet.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SMS & WHATSAPP -->
+      <div class="admin-panel" id="apanel-messaging">
+        <div class="section-card">
+          <div class="section-card-head"><span class="section-card-title">Messaging Channels</span></div>
+          <div class="section-card-body">
+            <p style="font-size:13px;color:var(--mud);line-height:1.7;margin-bottom:20px">Configure one or both channels. When a guest is added, their invite code is sent automatically via whichever channels are enabled.</p>
+            <div class="channel-tabs">
+              <button class="channel-tab active" onclick="switchChannel('sms')">📱 SMS (Africa's Talking)</button>
+              <button class="channel-tab" onclick="switchChannel('wa')">💬 WhatsApp</button>
+            </div>
+
+            <!-- SMS -->
+            <div class="channel-panel active" id="ch-sms">
+              <div class="sms-grid" style="margin-bottom:14px">
+                <div class="fld"><label>Username</label><input id="at-user" type="text" placeholder="your_username"/></div>
+                <div class="fld"><label>API Key</label><input id="at-key" type="password" placeholder="••••••••••••••••"/></div>
+                <div class="fld"><label>Sender ID (optional)</label><input id="at-sender" type="text" placeholder="EventPass" maxlength="11"/></div>
+              </div>
+              <div class="config-status-bar" id="sms-status-bar">
+                <div class="status-dot" id="sms-dot" style="background:#ccc"></div>
+                <span class="status-label" id="sms-status-txt">Not configured</span>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button class="btn btn-dark" onclick="saveAT()">Save SMS Config</button>
+                <button class="btn btn-outline" onclick="testAT()">Send Test SMS</button>
+              </div>
+              <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--stone)">
+                <div class="fld"><label>SMS Message Template</label>
+                  <textarea id="sms-tmpl" rows="5" style="font-family:'Jost Mono',monospace;font-size:12px"></textarea>
+                </div>
+                <div class="tmpl-vars">Variables: <code>{NAME}</code><code>{EVENT}</code><code>{CODE}</code><code>{TYPE}</code><code>{DATE}</code><code>{VENUE}</code></div>
+                <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="saveSMSTmpl()">Save Template</button>
+              </div>
+              <div class="alert alert-blue" style="margin-top:16px">
+                💡 Get your free API key at <strong>africastalking.com</strong> → Settings → API Key. Use username <code style="font-family:'Jost Mono',monospace;font-size:11px">sandbox</code> for testing without spending credits.
+              </div>
+            </div>
+
+            <!-- WhatsApp -->
+            <div class="channel-panel" id="ch-wa">
+              <p style="font-size:13px;color:var(--mud);line-height:1.7;margin-bottom:16px">
+                WhatsApp Business API via <strong>Meta Cloud API</strong>. Requires a verified WhatsApp Business Account.
+              </p>
+              <div class="sms-grid" style="margin-bottom:14px">
+                <div class="fld"><label>Phone Number ID</label><input id="wa-phone-id" type="text" placeholder="1234567890"/></div>
+                <div class="fld"><label>Access Token</label><input id="wa-token" type="password" placeholder="EAABs…"/></div>
+                <div class="fld"><label>Template Name (optional)</label><input id="wa-template" type="text" placeholder="invite_code"/></div>
+              </div>
+              <div class="config-status-bar" id="wa-status-bar">
+                <div class="status-dot" id="wa-dot" style="background:#ccc"></div>
+                <span class="status-label" id="wa-status-txt">Not configured</span>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button class="btn btn-wa" onclick="saveWA()">Save WhatsApp Config</button>
+                <button class="btn btn-outline" onclick="copyWAFallback()">Copy WA Message Link</button>
+              </div>
+              <div class="alert alert-sage" style="margin-top:16px">
+                ✓ <strong>Fallback always available:</strong> Even without an API key, use "Copy WA Message Link" on any guest to open WhatsApp Web with their invite pre-filled. No account needed.
+              </div>
+              <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--stone)">
+                <div class="fld"><label>WhatsApp Message Template</label>
+                  <textarea id="wa-tmpl" rows="5" style="font-family:'Jost Mono',monospace;font-size:12px"></textarea>
+                </div>
+                <div class="tmpl-vars">Variables: <code>{NAME}</code><code>{EVENT}</code><code>{CODE}</code><code>{TYPE}</code><code>{DATE}</code><code>{VENUE}</code></div>
+                <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="saveWATmpl()">Save Template</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Broadcast -->
+        <div class="section-card">
+          <div class="section-card-head"><span class="section-card-title">Broadcast — Send to All Unsent Guests</span></div>
+          <div class="section-card-body">
+            <p style="font-size:12px;color:var(--mud);margin-bottom:16px;line-height:1.7">Select an event and channel, then send invite codes to all guests who haven't been notified yet.</p>
+            <div class="form-row form-cols-3" style="align-items:end">
+              <div class="fld"><label>Event</label>
+                <select id="bc-event"><option value="">— All Events —</option></select>
+              </div>
+              <div class="fld"><label>Channel</label>
+                <select id="bc-channel">
+                  <option value="sms">SMS</option>
+                  <option value="wa">WhatsApp (API)</option>
+                  <option value="wa-link">WhatsApp (Link, no API)</option>
+                </select>
+              </div>
+              <div>
+                <button class="btn btn-dark" onclick="broadcastInvites()">Send to Unsent Guests</button>
+              </div>
+            </div>
+            <div id="bc-result" style="margin-top:14px;font-size:12px;color:var(--mud)"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /admin-body -->
+  </div><!-- /admin-main -->
+</div>
+
+<!-- ═══════════ GUEST PAGE ═══════════ -->
+<div class="view" id="view-guest">
+  <div class="guest-bg"></div>
+  <div class="guest-grain"></div>
+  <div id="guest-entry">
+    <div class="guest-logo">Event<em>Pass</em></div>
+    <div class="guest-logo-sub">Your personal invitation awaits</div>
+    <div class="guest-entry-label">Enter your invite code</div>
+    <input type="text" class="guest-code-input" id="guest-code-inp" placeholder="· · · · · · · ·" maxlength="10" autocomplete="off" spellcheck="false"/>
+    <div class="guest-code-err" id="guest-err"></div>
+    <div class="guest-entry-actions">
+      <button class="guest-enter-btn" onclick="revealInvite()">Reveal My Invitation</button>
+      <button class="guest-admin-link" onclick="showAdmin()">Host login</button>
+      <button class="guest-admin-link" onclick="showLanding()" style="color:#1C1814;margin-top:-4px">← Home</button>
+    </div>
+  </div>
+  <div id="guest-invite">
+    <div class="invite-card">
+      <div class="invite-card-header">
+        <div class="invite-header-deco"></div>
+        <div class="invite-header-deco2"></div>
+        <div class="invite-event-label" id="inv-event-label">You are cordially invited to</div>
+        <div class="invite-guest-name" id="inv-guest-name">Guest Name</div>
+        <div class="invite-guest-sub" id="inv-guest-sub">Personal Invitation</div>
+        <div class="invite-type-badge" id="inv-type-badge">🎟 Single Entry</div>
+      </div>
+      <div class="invite-card-body">
+        <div class="invite-detail-row">
+          <div class="invite-detail"><div class="invite-detail-label">Event</div><div class="invite-detail-value" id="inv-ev-name">—</div></div>
+          <div class="invite-detail"><div class="invite-detail-label">Date</div><div class="invite-detail-value" id="inv-ev-date">—</div></div>
+          <div class="invite-detail"><div class="invite-detail-label">Venue</div><div class="invite-detail-value" id="inv-ev-venue">—</div></div>
+          <div class="invite-detail"><div class="invite-detail-label">Time</div><div class="invite-detail-value" id="inv-ev-time">—</div></div>
+        </div>
+        <div class="invite-detail" style="margin-bottom:20px">
+          <div class="invite-detail-label">Dress Code</div>
+          <div class="invite-detail-value" id="inv-ev-dress" style="font-size:16px">—</div>
+        </div>
+        <div class="invite-note" id="inv-note" style="display:none"></div>
+        <div class="invite-code-row">
+          <div><div class="invite-code-label">Your Entry Code</div><div class="invite-code-val" id="inv-code">—</div></div>
+          <button class="btn btn-outline btn-sm" style="border-color:#3A3430;color:var(--cream);background:transparent;font-size:10px" onclick="copyCode()">Copy</button>
+        </div>
+      </div>
+    </div>
+    <button class="invite-back-btn" onclick="backToEntry()">← Enter a different code</button>
+  </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal-overlay" id="qr-modal" onclick="if(event.target.id==='qr-modal')this.classList.remove('open')">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div class="modal-title" id="qrm-title">Guest Pass</div>
+      <button class="modal-close" onclick="document.getElementById('qr-modal').classList.remove('open')">×</button>
+    </div>
+    <div class="modal-body qr-modal-content">
+      <div class="qr-guest-name" id="qrm-name"></div>
+      <div class="qr-ev-tag" id="qrm-ev"></div>
+      <div class="qr-code-display" id="qrm-code"></div>
+      <div class="qr-wrap" id="qr-wrap"></div>
+      <p style="font-size:12px;color:var(--mud);margin-bottom:20px" id="qrm-type"></p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-dark btn-sm" onclick="downloadQR()">⬇ Download QR</button>
+        <button class="btn btn-sms btn-sm" onclick="sendSMSToGuest()">📱 Send SMS</button>
+        <button class="btn btn-wa btn-sm" onclick="sendWAToGuest()">💬 WhatsApp</button>
+        <button class="btn btn-outline btn-sm" onclick="copyGuestMsg()">Copy Message</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════
+// STATE & PERSISTENCE
+// ══════════════════════════════════
+const STORE = 'eventpass_v4';
+const SMS_TMPL_DEFAULT = `Dear {NAME},\n\nYou are cordially invited to {EVENT}.\n\nYour personal entry code: {CODE}\nInvite: {TYPE}\nDate: {DATE}\nVenue: {VENUE}\n\nPresent this code at the entrance.\n\n— EventPass`;
+const WA_TMPL_DEFAULT  = `Hello {NAME}! 🎉\n\nYou're on the guest list for *{EVENT}*.\n\n🎟 Your entry code: *{CODE}*\n👥 Invite type: {TYPE}\n📅 Date: {DATE}\n📍 Venue: {VENUE}\n\nShow this code at the entrance. See you there!`;
+
+let S = {
+  events:[], guests:[], log:[], activity:[],
+  at:{ user:'', key:'', sender:'EventPass', tmpl:'' },
+  wa:{ phoneId:'', token:'', templateName:'', tmpl:'' },
+  settings:{ adminPin:'1234' }
+};
+
+function load(){
+  try{ const d=localStorage.getItem(STORE); if(d) S={...S,...JSON.parse(d)}; }catch(e){}
+  if(!S.at.tmpl) S.at.tmpl=SMS_TMPL_DEFAULT;
+  if(!S.wa.tmpl) S.wa.tmpl=WA_TMPL_DEFAULT;
+  if(!S.settings) S.settings={};
+  if(!S.settings.adminPin) S.settings.adminPin='1234';
+}
+function persist(){ localStorage.setItem(STORE,JSON.stringify(S)); }
+
+// ══════════════════════════════════
+// UTILS
+// ══════════════════════════════════
+function uid(){
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s=''; for(let i=0;i<8;i++) s+=c[Math.floor(Math.random()*c.length)]; return s;
+}
+function evById(id){ return S.events.find(e=>e.id===id); }
+function gById(id){ return S.guests.find(g=>g.id===id); }
+function gByCode(code){ return S.guests.find(g=>g.code===code.trim().toUpperCase()); }
+function fmtDate(d){ if(!d) return '—'; try{ return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }catch(e){return d;} }
+function fmtTime(t){ if(!t) return '—'; try{ const [h,m]=t.split(':'); const hr=parseInt(h); return `${hr>12?hr-12:hr||12}:${m} ${hr>=12?'PM':'AM'}`; }catch(e){return t;} }
+
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  clearTimeout(window._toast); window._toast=setTimeout(()=>t.classList.remove('show'),3800);
+}
+function logActivity(msg){ S.activity.unshift({msg,ts:Date.now()}); if(S.activity.length>40) S.activity.pop(); persist(); }
+function timeAgo(ts){
+  const d=Math.floor((Date.now()-ts)/1000);
+  if(d<60) return 'just now'; if(d<3600) return Math.floor(d/60)+'m ago';
+  if(d<86400) return Math.floor(d/3600)+'h ago'; return Math.floor(d/86400)+'d ago';
+}
+function buildMsg(tmpl,g,ev){
+  const type=g.inviteType==='double'?'Double Entry (Guest + 1)':'Single Entry';
+  return tmpl
+    .replace(/{NAME}/g,g.name)
+    .replace(/{EVENT}/g,ev?ev.name:'the event')
+    .replace(/{CODE}/g,g.code)
+    .replace(/{TYPE}/g,type)
+    .replace(/{DATE}/g,ev&&ev.date?fmtDate(ev.date):'TBD')
+    .replace(/{VENUE}/g,ev&&ev.venue?ev.venue:'TBD');
+}
+
+// ══════════════════════════════════
+// VIEW ROUTING & AUTHENTICATION
+// ══════════════════════════════════
+let isAdminLoggedIn = false;
+
+function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById('view-'+id).classList.add('active'); window.scrollTo(0,0); }
+function showLanding(){ showView('landing'); isAdminLoggedIn=false; }
+function showAdmin(){ if(!isAdminLoggedIn){ showView('login'); document.getElementById('login-pin').value=''; document.getElementById('login-error').textContent=''; document.getElementById('login-pin').focus(); } else { showView('admin'); refreshAdmin(); } }
+function showGuest(){
+  showView('guest');
+  document.getElementById('guest-entry').style.display='block';
+  document.getElementById('guest-invite').style.display='none';
+  document.getElementById('guest-code-inp').value='';
+  document.getElementById('guest-err').textContent='';
+}
+
+function submitLogin(){
+  const pin = document.getElementById('login-pin').value;
+  const errEl = document.getElementById('login-error');
+  if(!pin){ errEl.textContent='Enter your PIN'; return; }
+  if(pin === S.settings.adminPin){
+    isAdminLoggedIn = true;
+    showView('admin');
+    refreshAdmin();
+    toast('Welcome back!','ok');
+  } else {
+    errEl.textContent='Invalid PIN. Try again.';
+    document.getElementById('login-pin').value='';
+    document.getElementById('login-pin').focus();
+  }
+}
+
+function logoutAdmin(){
+  isAdminLoggedIn = false;
+  showLanding();
+  toast('Logged out');
+}
+
+// Allow Enter key to submit login
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && document.getElementById('view-login').classList.contains('active')){
+    submitLogin();
+  }
+});
+
+// ══════════════════════════════════
+// ADMIN PANEL SWITCHING
+// ══════════════════════════════════
+const PANEL_META={
+  overview:{title:'Overview',sub:'Your events at a glance',action:null},
+  events:{title:'Events',sub:'Create and manage your events',action:null},
+  guests:{title:'Guests & Codes',sub:'Invite guests and manage entry codes',action:`<button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ Export CSV</button>`},
+  checkin:{title:'Check-In Scanner',sub:'Scan and verify guest entry codes at the door',action:null},
+  messaging:{title:'SMS & WhatsApp',sub:'Configure messaging channels and send invitations',action:null},
+};
+
+function switchAdminPanel(name){
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('apanel-'+name).classList.add('active');
+  document.querySelectorAll('.a-nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('anav-'+name).classList.add('active');
+  const m=PANEL_META[name];
+  document.getElementById('admin-pg-title').textContent=m.title;
+  document.getElementById('admin-pg-sub').textContent=m.sub;
+  document.getElementById('admin-topbar-actions').innerHTML=m.action||'';
+  if(name==='overview') renderOverview();
+  if(name==='events') renderEventsTable();
+  if(name==='guests') renderGuests();
+  if(name==='checkin') renderCheckinStats();
+  if(name==='messaging'){ loadMsgFields(); updateMsgStatus(); }
+}
+
+function refreshAdmin(){
+  renderSidebarEvents(); populateSelects();
+  renderOverview(); renderEventsTable(); renderGuests();
+  renderCheckinStats(); updateMsgStatus();
+}
+
+// ══════════════════════════════════
+// SIDEBAR EVENTS
+// ══════════════════════════════════
+function renderSidebarEvents(){
+  const el=document.getElementById('sidebar-events');
+  if(!S.events.length){ el.innerHTML=''; return; }
+  el.innerHTML=S.events.map(ev=>{
+    const cnt=S.guests.filter(g=>g.eventId===ev.id).length;
+    return `<div class="admin-event-pill" onclick="filterGuestsByEvent(${ev.id})">
+      <div class="ev-pill-dot"></div>
+      <span class="ev-pill-name">${ev.name}</span>
+      <span class="ev-pill-cnt">${cnt}</span>
+    </div>`;
+  }).join('');
+}
+function filterGuestsByEvent(id){
+  switchAdminPanel('guests');
+  document.getElementById('gf-event').value=id;
+  renderGuests();
+}
+
+// ══════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════
+function renderOverview(){
+  document.getElementById('ov-events').textContent=S.events.length;
+  document.getElementById('ov-guests').textContent=S.guests.length;
+  const ci=S.guests.filter(g=>g.checkedIn).length;
+  document.getElementById('ov-checkedin').textContent=ci;
+  document.getElementById('ov-pending').textContent=S.guests.length-ci;
+  const el=document.getElementById('overview-activity');
+  if(!S.activity.length){ el.innerHTML='<div class="empty"><div class="empty-icon">✦</div><div class="empty-text">Create your first event to get started.</div></div>'; return; }
+  el.innerHTML=S.activity.slice(0,12).map(a=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--warm);font-size:13px">
+      <span style="color:var(--charcoal)">${a.msg}</span>
+      <span style="font-size:11px;color:var(--bark);font-family:'Jost Mono',monospace;flex-shrink:0;margin-left:12px">${timeAgo(a.ts)}</span>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════
+// EVENTS
+// ══════════════════════════════════
+function createNewEvent(){
+  const name=document.getElementById('ev-name').value.trim();
+  if(!name){ toast('Enter an event name','err'); return; }
+  const ev={ id:Date.now(), name,
+    date:document.getElementById('ev-date').value,
+    venue:document.getElementById('ev-venue').value.trim(),
+    time:document.getElementById('ev-time').value,
+    dress:document.getElementById('ev-dress').value.trim(),
+    note:document.getElementById('ev-note').value.trim(),
+    createdAt:Date.now()
+  };
+  S.events.push(ev);
+  logActivity(`Event "${name}" created`);
+  persist(); refreshAdmin();
+  ['ev-name','ev-date','ev-venue','ev-time','ev-dress'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ev-note').value='';
+  toast(`"${name}" created!`,'ok');
+}
+
+function renderEventsTable(){
+  const tb=document.getElementById('events-tbody');
+  if(!S.events.length){ tb.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">◇</div><div class="empty-text">No events yet. Create one above.</div></div></td></tr>`; return; }
+  tb.innerHTML=S.events.map(ev=>{
+    const cnt=S.guests.filter(g=>g.eventId===ev.id).length;
+    const ci=S.guests.filter(g=>g.eventId===ev.id&&g.checkedIn).length;
+    return `<tr>
+      <td><strong>${ev.name}</strong></td>
+      <td style="font-size:12px;color:var(--mud)">${ev.date?fmtDate(ev.date):'—'}</td>
+      <td style="font-size:12px;color:var(--mud)">${ev.venue||'—'}</td>
+      <td><span class="mono">${cnt}</span></td>
+      <td><span style="color:var(--sage);font-weight:500">${ci}</span><span style="color:var(--mud)"> / ${cnt}</span></td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="filterGuestsByEvent(${ev.id})">Guests</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEvent(${ev.id})">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteEvent(id){
+  const ev=evById(id); if(!ev||!confirm(`Delete "${ev.name}" and all its guests?`)) return;
+  S.events=S.events.filter(e=>e.id!==id);
+  S.guests=S.guests.filter(g=>g.eventId!==id);
+  logActivity(`Event "${ev.name}" deleted`);
+  persist(); refreshAdmin(); toast('Event deleted');
+}
+
+// ══════════════════════════════════
+// GUESTS
+// ══════════════════════════════════
+async function addGuest(){
+  if(!S.events.length){ document.getElementById('g-warn').style.display='block'; return; }
+  document.getElementById('g-warn').style.display='none';
+  const name=document.getElementById('g-name').value.trim();
+  const phone=document.getElementById('g-phone').value.trim();
+  const eventId=parseInt(document.getElementById('g-event').value);
+  const inviteType=document.getElementById('g-type').value;
+  if(!name){ toast('Enter guest name','err'); return; }
+  if(!eventId){ toast('Select an event','err'); return; }
+  let code; do{ code=uid(); } while(S.guests.some(g=>g.code===code));
+  const g={ id:Date.now(), name, phone, eventId, inviteType, code, checkedIn:false, checkedInAt:null, smsSent:false, waSent:false, codeViewed:false, createdAt:Date.now() };
+  S.guests.unshift(g);
+  const ev=evById(eventId);
+  logActivity(`"${name}" invited to "${ev?ev.name:'event'}"`);
+  persist(); renderGuests(); renderSidebarEvents(); renderOverview(); renderCheckinStats();
+  document.getElementById('g-name').value=''; document.getElementById('g-phone').value='';
+
+  // Auto-send if configured and phone provided
+  let sentVia=[];
+  if(phone){
+    if(S.at.user&&S.at.key){
+      const ok=await sendSMSAPI(g); if(ok){ g.smsSent=true; sentVia.push('SMS'); persist(); renderGuests(); }
+    }
+    if(S.wa.phoneId&&S.wa.token){
+      const ok=await sendWAAPI(g); if(ok){ g.waSent=true; sentVia.push('WhatsApp'); persist(); renderGuests(); }
+    }
+    if(!sentVia.length){
+      document.getElementById('g-sms-note').style.display='block';
+      toast(`${name} added. Code: ${code}`);
+    } else {
+      toast(`${name} added. Sent via ${sentVia.join(' & ')}!`,'ok');
+    }
+  } else {
+    toast(`${name} added. Code: ${code} (no phone number — configure manually)`);
+  }
+}
+
+function renderGuests(){
+  const fEv=document.getElementById('gf-event').value;
+  let list=[...S.guests];
+  if(fEv) list=list.filter(g=>g.eventId===parseInt(fEv));
+  const tb=document.getElementById('guests-tbody');
+  if(!list.length){ tb.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">◻</div><div class="empty-text">No guests yet.</div></div></td></tr>`; return; }
+  tb.innerHTML=list.map(g=>{
+    const ev=evById(g.eventId);
+    const typeB=g.inviteType==='double'?`<span class="badge badge-gold">🎟🎟 Double</span>`:`<span class="badge badge-stone">🎟 Single</span>`;
+    const ciB=g.checkedIn?`<span class="badge badge-sage">✓ In</span>`:`<span class="badge badge-stone">Pending</span>`;
+    let sentB='<span style="font-size:11px;color:var(--bark)">—</span>';
+    const sent=[];
+    if(g.smsSent) sent.push(`<span class="badge badge-blue" style="font-size:9px">SMS</span>`);
+    if(g.waSent) sent.push(`<span class="badge badge-wa" style="font-size:9px">WA</span>`);
+    if(sent.length) sentB=sent.join(' ');
+    return `<tr>
+      <td><strong>${g.name}</strong>${g.phone?`<br><span class="mono" style="color:var(--mud)">${g.phone}</span>`:''}</td>
+      <td><span class="badge badge-gold" style="font-size:9px">${ev?ev.name:'—'}</span></td>
+      <td><span class="mono" style="letter-spacing:3px">${g.code}</span></td>
+      <td>${typeB}</td>
+      <td>${sentB}</td>
+      <td>${ciB}</td>
+      <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="openQRModal(${g.id})" title="View QR & Send">QR</button>
+        <button class="btn btn-danger btn-sm" onclick="removeGuest(${g.id})">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function removeGuest(id){
+  const g=gById(id); if(!g||!confirm(`Remove ${g.name}?`)) return;
+  S.guests=S.guests.filter(x=>x.id!==id);
+  logActivity(`"${g.name}" removed`);
+  persist(); renderGuests(); renderSidebarEvents(); renderOverview(); renderCheckinStats();
+  toast('Guest removed');
+}
+
+function populateSelects(){
+  const opts=S.events.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  document.getElementById('g-event').innerHTML='<option value="">— Select Event —</option>'+opts;
+  document.getElementById('gf-event').innerHTML='<option value="">All Events</option>'+opts;
+  document.getElementById('scan-ev-sel').innerHTML='<option value="">— All Events —</option>'+opts;
+  document.getElementById('bc-event').innerHTML='<option value="">— All Events —</option>'+opts;
+}
+
+// ══════════════════════════════════
+// CHECK-IN SCANNER
+// ══════════════════════════════════
+function renderCheckinStats(){
+  const total=S.guests.length;
+  const ci=S.guests.filter(g=>g.checkedIn).length;
+  document.getElementById('ci-total').textContent=total;
+  document.getElementById('ci-checked').textContent=ci;
+  document.getElementById('ci-remaining').textContent=total-ci;
+}
+
+function doCheckIn(){
+  const raw=document.getElementById('scan-code-inp').value.trim().toUpperCase();
+  const evSel=parseInt(document.getElementById('scan-ev-sel').value)||null;
+  const box=document.getElementById('scan-result');
+  if(!raw) return;
+
+  let g=S.guests.find(x=>x.code===raw&&(!evSel||x.eventId===evSel));
+  if(!g&&evSel) g=S.guests.find(x=>x.code===raw); // fallback: search all
+
+  box.className='scan-result'; box.style.display='block';
+  const icon=document.getElementById('sr-icon');
+  const name=document.getElementById('sr-name');
+  const msg=document.getElementById('sr-msg');
+  const bdg=document.getElementById('sr-badge');
+
+  if(!g){
+    box.classList.add('fail'); icon.textContent='✗'; name.textContent='Invalid Code';
+    name.style.color='var(--rose)'; msg.textContent='This code is not in the guest list.'; bdg.innerHTML='';
+  } else if(g.checkedIn){
+    box.classList.add('already'); icon.textContent='⚠'; name.textContent=g.name;
+    name.style.color='#8A6A20';
+    msg.textContent=`Already checked in at ${g.checkedInAt?new Date(g.checkedInAt).toLocaleTimeString():'earlier'}.`;
+    bdg.innerHTML=g.inviteType==='double'?`<span class="badge badge-gold">🎟🎟 Double — Guest + 1</span>`:`<span class="badge badge-gold">🎟 Single Entry</span>`;
+  } else {
+    const ev=evById(g.eventId);
+    g.checkedIn=true; g.checkedInAt=Date.now();
+    const entry={ name:g.name, code:g.code, event:ev?ev.name:'?', inviteType:g.inviteType, time:new Date().toLocaleTimeString(), ts:Date.now() };
+    S.log.unshift(entry);
+    logActivity(`"${g.name}" checked in at ${entry.time}`);
+    persist(); renderGuests(); renderCheckinStats(); renderLog(); renderOverview();
+    box.classList.add('success'); icon.textContent='✓'; name.textContent=g.name;
+    name.style.color='var(--sage)';
+    msg.textContent=`Welcome to ${ev?ev.name:'the event'}!`;
+    bdg.innerHTML=g.inviteType==='double'?`<span class="badge badge-sage">🎟🎟 Double — Guest + 1</span>`:`<span class="badge badge-sage">🎟 Single Entry</span>`;
+  }
+  document.getElementById('scan-code-inp').value='';
+}
+
+document.addEventListener('keydown',e=>{
+  if(document.activeElement===document.getElementById('scan-code-inp')&&e.key==='Enter') doCheckIn();
+});
+
+function renderLog(){
+  const el=document.getElementById('checkin-log');
+  if(!S.log.length){ el.innerHTML='<div class="empty" style="padding:40px 0"><div class="empty-icon">✦</div><div class="empty-text">No check-ins yet.</div></div>'; return; }
+  el.innerHTML=S.log.map(l=>`
+    <div class="log-entry">
+      <div style="display:flex;align-items:center;flex:1;min-width:0">
+        <div class="log-dot"></div>
+        <div style="min-width:0">
+          <div class="log-name">${l.name}</div>
+          <div class="log-detail">${l.event} · ${l.inviteType==='double'?'🎟🎟 Double':'🎟 Single'}</div>
+        </div>
+      </div>
+      <span class="log-time">${l.time}</span>
+    </div>`).join('');
+}
+
+function clearLog(){ if(!confirm('Clear the check-in log?')) return; S.log=[]; persist(); renderLog(); toast('Log cleared'); }
+
+// ══════════════════════════════════
+// SMS — AFRICA'S TALKING
+// ══════════════════════════════════
+function saveAT(){
+  S.at.user=document.getElementById('at-user').value.trim();
+  S.at.key=document.getElementById('at-key').value.trim();
+  S.at.sender=document.getElementById('at-sender').value.trim()||'EventPass';
+  persist(); updateMsgStatus();
+  document.getElementById('g-sms-note').style.display='none';
+  toast('SMS configuration saved!','ok');
+}
+function saveSMSTmpl(){ S.at.tmpl=document.getElementById('sms-tmpl').value; persist(); toast('SMS template saved!','ok'); }
+
+async function testAT(){
+  if(!S.at.user||!S.at.key){ toast('Save your API credentials first','err'); return; }
+  const ph=prompt('Enter a phone number to test (e.g. +255712345678):'); if(!ph) return;
+  const fakeG={ name:'Test Guest', phone:ph, code:'TESTCODE', inviteType:'single' };
+  const fakeEv={ name:'Test Event', date:'', venue:'Test Venue', time:'' };
+  const body=buildMsg(S.at.tmpl,fakeG,fakeEv);
+  toast('Sending test SMS…');
+  try{
+    const params=new URLSearchParams({username:S.at.user,to:ph,message:body,...(S.at.sender?{from:S.at.sender}:{})});
+    const r=await fetch('https://api.africastalking.com/version1/messaging',{method:'POST',headers:{'apiKey':S.at.key,'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:params});
+    const d=await r.json();
+    const ok=d?.SMSMessageData?.Recipients?.[0]?.status==='Success';
+    toast(ok?'Test SMS sent!':'SMS failed — check credentials',ok?'ok':'err');
+  }catch(e){ toast('SMS error — check network/credentials','err'); }
+}
+
+async function sendSMSAPI(g){
+  if(!S.at.user||!S.at.key||!g.phone) return false;
+  const ev=evById(g.eventId);
+  const body=buildMsg(S.at.tmpl,g,ev);
+  try{
+    const params=new URLSearchParams({username:S.at.user,to:g.phone,message:body,...(S.at.sender?{from:S.at.sender}:{})});
+    const r=await fetch('https://api.africastalking.com/version1/messaging',{method:'POST',headers:{'apiKey':S.at.key,'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:params});
+    const d=await r.json();
+    return d?.SMSMessageData?.Recipients?.[0]?.status==='Success';
+  }catch(e){ return false; }
+}
+
+// ══════════════════════════════════
+// WHATSAPP — META CLOUD API
+// ══════════════════════════════════
+function saveWA(){
+  S.wa.phoneId=document.getElementById('wa-phone-id').value.trim();
+  S.wa.token=document.getElementById('wa-token').value.trim();
+  S.wa.templateName=document.getElementById('wa-template').value.trim();
+  persist(); updateMsgStatus();
+  document.getElementById('g-sms-note').style.display='none';
+  toast('WhatsApp configuration saved!','ok');
+}
+function saveWATmpl(){ S.wa.tmpl=document.getElementById('wa-tmpl').value; persist(); toast('WhatsApp template saved!','ok'); }
+
+async function sendWAAPI(g){
+  if(!S.wa.phoneId||!S.wa.token||!g.phone) return false;
+  const ev=evById(g.eventId);
+  const body=buildMsg(S.wa.tmpl,g,ev);
+  // Send plain text message via WhatsApp Cloud API
+  try{
+    const payload={ messaging_product:'whatsapp', to:g.phone.replace(/\D/g,''), type:'text', text:{ body } };
+    const r=await fetch(`https://graph.facebook.com/v19.0/${S.wa.phoneId}/messages`,{
+      method:'POST',
+      headers:{ 'Authorization':'Bearer '+S.wa.token, 'Content-Type':'application/json' },
+      body:JSON.stringify(payload)
+    });
+    const d=await r.json();
+    return !!d?.messages?.[0]?.id;
+  }catch(e){ return false; }
+}
+
+// WhatsApp fallback link — no API needed
+function buildWALink(g){
+  const ev=evById(g.eventId);
+  const msg=buildMsg(S.wa.tmpl,g,ev);
+  const phone=(g.phone||'').replace(/\D/g,'');
+  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+}
+
+function copyWAFallback(){
+  if(!curGuest) return;
+  const link=buildWALink(curGuest);
+  window.open(link,'_blank');
+  toast('Opening WhatsApp with invite…','wa');
+}
+
+// ══════════════════════════════════
+// MSG STATUS BAR
+// ══════════════════════════════════
+function updateMsgStatus(){
+  const smsDot=document.getElementById('sms-dot');
+  const smsTxt=document.getElementById('sms-status-txt');
+  const waDot=document.getElementById('wa-dot');
+  const waTxt=document.getElementById('wa-status-txt');
+  if(smsDot){
+    if(S.at.user&&S.at.key){ smsDot.style.background='var(--sage)'; smsTxt.textContent=`Connected — ${S.at.user}`; }
+    else{ smsDot.style.background='#ccc'; smsTxt.textContent='Not configured'; }
+  }
+  if(waDot){
+    if(S.wa.phoneId&&S.wa.token){ waDot.style.background='var(--wa)'; waTxt.textContent=`Connected — Phone ID ${S.wa.phoneId.slice(0,8)}…`; }
+    else{ waDot.style.background='#ccc'; waTxt.textContent='Not configured (fallback link always available)'; }
+  }
+}
+
+function loadMsgFields(){
+  document.getElementById('at-user').value=S.at.user||'';
+  document.getElementById('at-key').value=S.at.key||'';
+  document.getElementById('at-sender').value=S.at.sender||'EventPass';
+  document.getElementById('sms-tmpl').value=S.at.tmpl||SMS_TMPL_DEFAULT;
+  document.getElementById('wa-phone-id').value=S.wa.phoneId||'';
+  document.getElementById('wa-token').value=S.wa.token||'';
+  document.getElementById('wa-template').value=S.wa.templateName||'';
+  document.getElementById('wa-tmpl').value=S.wa.tmpl||WA_TMPL_DEFAULT;
+}
+
+// ══════════════════════════════════
+// CHANNEL TABS
+// ══════════════════════════════════
+function switchChannel(ch){
+  document.querySelectorAll('.channel-tab').forEach((t,i)=>t.classList.toggle('active',['sms','wa'][i]===ch));
+  document.querySelectorAll('.channel-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('ch-'+ch).classList.add('active');
+}
+
+// ══════════════════════════════════
+// BROADCAST
+// ══════════════════════════════════
+async function broadcastInvites(){
+  const evSel=parseInt(document.getElementById('bc-event').value)||null;
+  const ch=document.getElementById('bc-channel').value;
+  let list=S.guests.filter(g=>g.phone&&(!evSel||g.eventId===evSel));
+  if(ch==='sms') list=list.filter(g=>!g.smsSent);
+  if(ch==='wa'||ch==='wa-link') list=list.filter(g=>!g.waSent);
+  if(!list.length){ document.getElementById('bc-result').textContent='No unsent guests found for this selection.'; return; }
+  const res=document.getElementById('bc-result');
+  res.textContent=`Sending to ${list.length} guest(s)…`;
+  let ok=0,fail=0;
+  for(const g of list){
+    if(ch==='sms'){
+      const s=await sendSMSAPI(g); if(s){ g.smsSent=true; ok++; } else fail++;
+    } else if(ch==='wa'){
+      const s=await sendWAAPI(g); if(s){ g.waSent=true; ok++; } else fail++;
+    } else {
+      // wa-link — open in new tab for each (capped at 3 to avoid popup blockers)
+      if(ok<3) window.open(buildWALink(g),'_blank'); g.waSent=true; ok++;
+    }
+    persist();
+  }
+  renderGuests();
+  res.textContent=`Done: ${ok} sent${fail?`, ${fail} failed`:''}. Guests list updated.`;
+  if(ok) logActivity(`Broadcast sent to ${ok} guest(s) via ${ch.toUpperCase()}`);
+  persist();
+}
+
+// ══════════════════════════════════
+// QR MODAL
+// ══════════════════════════════════
+let curGuest=null;
+function openQRModal(id){
+  const g=gById(id); if(!g) return;
+  curGuest=g;
+  const ev=evById(g.eventId);
+  document.getElementById('qrm-name').textContent=g.name;
+  document.getElementById('qrm-ev').textContent=ev?ev.name:'';
+  document.getElementById('qrm-code').textContent=g.code;
+  document.getElementById('qrm-type').textContent=g.inviteType==='double'?'🎟🎟 Double Entry — Guest + 1':'🎟 Single Entry';
+  document.getElementById('qr-wrap').innerHTML='';
+  new QRCode(document.getElementById('qr-wrap'),{text:g.code,width:180,height:180,colorDark:'#1C1814',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  document.getElementById('qr-modal').classList.add('open');
+}
+function downloadQR(){
+  setTimeout(()=>{ const c=document.querySelector('#qr-wrap canvas'); if(!c) return; const a=document.createElement('a'); a.download=`invite-${curGuest.code}.png`; a.href=c.toDataURL(); a.click(); toast('QR downloaded!'); },100);
+}
+async function sendSMSToGuest(){
+  if(!curGuest) return;
+  if(!S.at.user||!S.at.key){ toast('Configure SMS in SMS & WhatsApp settings first','err'); return; }
+  if(!curGuest.phone){ toast('No phone number for this guest','err'); return; }
+  toast('Sending SMS…');
+  const ok=await sendSMSAPI(curGuest);
+  if(ok){ curGuest.smsSent=true; persist(); renderGuests(); toast('SMS sent!','ok'); }
+  else toast('SMS failed — check credentials','err');
+}
+async function sendWAToGuest(){
+  if(!curGuest) return;
+  if(!curGuest.phone){ toast('No phone number for this guest','err'); return; }
+  // Try API first, fall back to link
+  if(S.wa.phoneId&&S.wa.token){
+    toast('Sending via WhatsApp API…');
+    const ok=await sendWAAPI(curGuest);
+    if(ok){ curGuest.waSent=true; persist(); renderGuests(); toast('WhatsApp message sent!','wa'); return; }
+  }
+  // Fallback: open WA web link
+  window.open(buildWALink(curGuest),'_blank');
+  curGuest.waSent=true; persist(); renderGuests();
+  toast('Opened WhatsApp with invite pre-filled','wa');
+}
+function copyGuestMsg(){
+  if(!curGuest) return;
+  const ev=evById(curGuest.eventId);
+  const msg=buildMsg(S.wa.tmpl||WA_TMPL_DEFAULT,curGuest,ev);
+  navigator.clipboard.writeText(msg).then(()=>toast('Message copied! Paste in WhatsApp or SMS.'));
+}
+
+// ══════════════════════════════════
+// GUEST PAGE
+// ══════════════════════════════════
+let activeGuest=null;
+document.getElementById('guest-code-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') revealInvite(); document.getElementById('guest-err').textContent=''; });
+
+function revealInvite(){
+  const code=document.getElementById('guest-code-inp').value.trim();
+  const errEl=document.getElementById('guest-err');
+  if(!code){ errEl.textContent='Please enter your invite code.'; return; }
+  const g=gByCode(code);
+  if(!g){ errEl.textContent='That code was not found. Please check and try again.'; return; }
+  const ev=evById(g.eventId);
+  if(!g.codeViewed){ g.codeViewed=true; logActivity(`"${g.name}" viewed their invitation`); persist(); renderGuests(); }
+  activeGuest=g;
+  document.getElementById('inv-event-label').textContent='You are cordially invited to';
+  document.getElementById('inv-guest-name').textContent=g.name;
+  document.getElementById('inv-guest-sub').textContent=`Personal Invitation · ${ev?ev.name:''}`;
+  document.getElementById('inv-type-badge').innerHTML=g.inviteType==='double'?'🎟🎟 Double Entry — Guest + 1':'🎟 Single Entry';
+  document.getElementById('inv-ev-name').textContent=ev?ev.name:'—';
+  document.getElementById('inv-ev-date').textContent=ev&&ev.date?fmtDate(ev.date):'—';
+  document.getElementById('inv-ev-venue').textContent=ev&&ev.venue?ev.venue:'—';
+  document.getElementById('inv-ev-time').textContent=ev&&ev.time?fmtTime(ev.time):'—';
+  document.getElementById('inv-ev-dress').textContent=ev&&ev.dress?ev.dress:'—';
+  document.getElementById('inv-code').textContent=g.code;
+  const noteEl=document.getElementById('inv-note');
+  if(ev&&ev.note){ noteEl.textContent=ev.note; noteEl.style.display='block'; } else noteEl.style.display='none';
+  document.getElementById('guest-entry').style.display='none';
+  document.getElementById('guest-invite').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function backToEntry(){
+  document.getElementById('guest-invite').style.display='none';
+  document.getElementById('guest-entry').style.display='block';
+  document.getElementById('guest-code-inp').value='';
+  document.getElementById('guest-err').textContent='';
+  activeGuest=null;
+}
+function copyCode(){ if(!activeGuest) return; navigator.clipboard.writeText(activeGuest.code).then(()=>toast('Code copied!')); }
+
+// ══════════════════════════════════
+// EXPORT
+// ══════════════════════════════════
+function exportCSV(){
+  const fEv=document.getElementById('gf-event').value;
+  let list=[...S.guests]; if(fEv) list=list.filter(g=>g.eventId===parseInt(fEv));
+  const rows=[['Name','Phone','Event','Code','Invite Type','SMS Sent','WA Sent','Code Viewed','Checked In','Check-In Time']];
+  list.forEach(g=>{ const ev=evById(g.eventId); rows.push([g.name,g.phone||'',ev?ev.name:'',g.code,g.inviteType,g.smsSent?'Yes':'No',g.waSent?'Yes':'No',g.codeViewed?'Yes':'No',g.checkedIn?'Yes':'No',g.checkedInAt?new Date(g.checkedInAt).toLocaleString():'']); });
+  const csv=rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='eventpass-guests.csv'; a.click();
+}
+
+// ══════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open')); });
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+load();
+</script>
+</body>
+</html>
